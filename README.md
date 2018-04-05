@@ -17,5 +17,7 @@ Clone the repo and run ```python -m SimpleHTTPServer``` from the project root.  
 ## Game Controls
 
 1 - Changes the perspective to angle 1 (at the top of the scene, looking down)
+
 2 - Changes the perspective to angle 2 (at the front of the scene, looking across)
+
 3 - Changes the perspective to angle 3 (at the top-front corner of the scene, looking diagonally)
