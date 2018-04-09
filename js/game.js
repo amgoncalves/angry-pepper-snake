@@ -130,22 +130,22 @@ function createPointLight(){
     light.shadow.camera.far = 500      // default
     return light;
 }
-//
-// function placeFood() {
-//   // Find a random location that isn't occupied by the snake.
-//   var occupy = false;
-//   while (!occupy) {
-//     food.x = Math.floor(Math.random() * numCols);
-//     food.y = Math.floor(Math.random() * numRows);
-//     okay = true;
-//     for (var i = 0; i < snake.length; ++i) {
-//       if (snake[i].x == food.x && snake[i].y == food.y) {
-//         occupy = false;
-//         break;
-//       }
-//     }
-//   }
-// }
+
+function placeFood() {
+  // Find a random location that isn't occupied by the snake.
+  var occupy = false;
+  while (!occupy) {
+    food.x = Math.floor(Math.random() * numCols);
+    food.y = Math.floor(Math.random() * numRows);
+    okay = true;
+    for (var i = 0; i < snake.length; ++i) {
+      if (snake[i].x == food.x && snake[i].y == food.y) {
+        occupy = false;
+        break;
+      }
+    }
+  }
+}
 
 
 /**
@@ -291,6 +291,9 @@ function buildMainScene() {
     cubeGreen = addCube(west, 0, north, green);
     cubeBlue = addCube(east, 0, north, blue);
     cubeYellow = addCube(east, 0, south, yellow);
+	
+    enemy1 = addNewEnemy(1);
+    enemy2 = addNewEnemy(1);
 
     for (i=0; i<gameState.length; i++) {
       var snakeCube = addPhysCube(i*unit-unit/2,0,0, white);
