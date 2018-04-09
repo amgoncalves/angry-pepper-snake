@@ -9,6 +9,7 @@ var ground;
 var cubeWhite, cubeRed;
 var lightA, lightB;
 var clock;
+var enemy1, enemy2;
 
 // Measurements
 var unit = 10; // unit for the "grid", used in the calculation of the cube, ground
@@ -129,13 +130,15 @@ function createPointLight(){
     return light;
 }
 
+
+
 function placeFood() {
   // Find a random location that isn't occupied by the snake.
   var occupy = false;
   while (!occupy) {
     food.x = Math.floor(Math.random() * numCols);
     food.y = Math.floor(Math.random() * numRows);
-    okay = true;
+    
     for (var i = 0; i < snake.length; ++i) {
       if (snake[i].x == food.x && snake[i].y == food.y) {
         occupy = false;
@@ -290,6 +293,12 @@ function buildMainScene() {
     cubeBlue = addCube(east, 0, north, blue);
     cubeYellow = addCube(east, 0, south, yellow);
 
+   // addEnemy();
+
+   enemy1 = addNewEnemy(1);
+    enemy2 = addNewEnemy(1);
+
+
     for (i=0; i<gameState.length; i++) {
       var snakeCube = addPhysCube(i*unit,0,0, white);
       setSelfCol(snakeCube);
@@ -297,6 +306,8 @@ function buildMainScene() {
     }
 
     food = addMedBalls(1)
+
+    
 
 }
 
@@ -412,6 +423,105 @@ function outOfBound(i) {
     || snake[i].position.z <= north+unit/2 || snake[i].position.z >= south-unit/2);
 }
 
+function EnmOutOfBound(enm1,enm2) {
+  return (enm1.position.x <= west+unit/2 || enm1.position.x >= east-unit/2
+    || enm1.position.z <= north+unit/2 || enm1.position.z >= south-unit/2 ||
+enm2.position.x <= west+unit/2 || enm2.position.x >= east-unit/2
+    || enm2.position.z <= north+unit/2 || enm2.position.z >= south-unit/2
+    );
+}
+
+
+function createSphere(){
+    //var geometry = new THREE.SphereGeometry( 4, 20, 20);
+    var geometry = new THREE.SphereGeometry( 5, 10, 10);
+    var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
+    var pmaterial = new Physijs.createMaterial(material,0.9,0.5);
+    var mesh = new Physijs.SphereMesh( geometry, material );
+    mesh.setDamping(0.1,0.1);
+    mesh.castShadow = true;
+    return mesh;
+}
+
+
+function createBall(){
+		//var geometry = new THREE.SphereGeometry( 4, 20, 20);
+		var geometry = new THREE.SphereGeometry( 1, 16, 16);
+		var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
+		var pmaterial = new Physijs.createMaterial(material,0.9,0.95);
+    var mesh = new Physijs.BoxMesh( geometry, pmaterial );
+		mesh.setDamping(0.1,0.1);
+		mesh.castShadow = true;
+		return mesh;
+	}
+
+
+	function addNewEnemy(numBalls){
+
+    //for(i=0;i<numBalls;i++){
+    	var ball = createSphere();
+    	x = 0;
+      z = 0;
+      var okay = false;
+      while (!okay) {
+        x = randN(50)+15;
+        z = randN(50)+15;
+        okay = true;
+        for (var i = 0; i < snake.length; ++i) {
+          if (snake[i].position.x == x && snake[i].position.z == z) {
+            okay = false;
+            break;
+          }
+        }
+      }
+      ball.position.set(x,0,z);
+    	scene.add(ball);
+
+    	ball.addEventListener( 'collision',
+    			       function( other_object, relative_velocity, relative_rotation, contact_normal ) {
+    				   if (other_object==snake[0]){
+    				       console.log("enemy "+i+" hit the snake");
+    				       gameState.score -= 1;  // add one to the score
+    				       // make the ball drop below the scene ..
+    				       // threejs doesn't let us remove it from the schene...
+    				       this.position.y = this.position.y - 100;
+    				       this.__dirtyPosition = true;
+    				   }
+    			       }
+    			     )
+    //}
+    return ball;
+}
+
+function moveEnemy() {
+
+  enemy1.position.x -=  unit;
+  enemy2.position.z -= unit;
+ if (enemy1.position.x < west) {
+  enemy1.position.x += unit;
+  // enemy1.position.set(Math.floor(Math.random() * numCols),
+  //   Math.floor(Math.random() * numRows),0) ;
+  enemy1.position.set(0,0,0)
+  // += 2* unit
+ } 
+
+ if (enemy2.position.z < north) {
+  // enemy1.position.x += 2* unit;
+  // enemy1.position.set(Math.floor(Math.random() * numCols),
+  //   Math.floor(Math.random() * numRows),0) ;
+  enemy2.position.set(0,0,0)
+  enemy2.position.z += unit;
+  // += 2* unit
+ } 
+
+//    if (EnmOutOfBound) {
+// enemy1.position.x += unit;
+// enemy2.position.z += unit;
+//   }
+
+}
+
+
 /**
    Calls relevent functions to animate the game and update state.
 */
@@ -423,7 +533,11 @@ function animate() {
     if (counter == 50) {
       moveSnake();
       counter = 0;
+     moveEnemy()
+
+      
     }
+  
     console.log(food.position)
     console.log(snake[0].position)
     if (Math.abs(food.position.x - snake[0].position.x) <= 10 && Math.abs(food.position.z - snake[0].position.z) <= 10) {
@@ -431,6 +545,35 @@ function animate() {
        food.position.y = food.position.y - 1000;
        food.__dirtyPosition = true;
        food = addMedBalls(1);
+    }
+
+     if (Math.abs(enemy1.position.x - snake[0].position.x) <= 10 && Math.abs(enemy1.position.z - snake[0].position.z) <= 10) {
+       // gameState.health--;
+       // enemy1.position.y = enemy1.position.y - 1000;
+       // enemy1.__dirtyPosition = true;
+       //enemy1 = addMedBalls(1);
+      // gameState.scene = 'youlose';
+
+      //gameState.health --;
+    // console.log("out of bound")
+
+    gameState.health = -1;
+    if (gameState.health == 0) {
+      gameState.scene = 'youlose';
+    }
+     // createEndScene2();
+    }
+
+    if (Math.abs(enemy2.position.x - snake[0].position.x) <= 10 && Math.abs(enemy2.position.z - snake[0].position.z) <= 10) {
+       // gameState.health--;
+      // gameState.scene = 'youlose';
+     // createEndScene2();
+
+        gameState.health = -1;
+    console.log("out of bound")
+    if (gameState.health < 0) {
+      gameState.scene = 'youlose';
+    }
     }
 
     //console.log(snake[1])
@@ -451,6 +594,8 @@ function animate() {
         var info = document.getElementById("info");
         info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: ' + gameState.health +'</div>';
     }
+
+   
 
 
 
