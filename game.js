@@ -484,6 +484,13 @@ function createBall(){
     return ball;
 }
 
+function moveEnemy() {
+
+  enemy1.position.x -= unit;
+  enemy2.position.z -= unit;
+
+}
+
 
 /**
    Calls relevent functions to animate the game and update state.
@@ -496,6 +503,7 @@ function animate() {
     if (counter == 50) {
       moveSnake();
       counter = 0;
+      moveEnemy()
     }
     console.log(food.position)
     console.log(snake[0].position)
