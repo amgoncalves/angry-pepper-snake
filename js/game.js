@@ -32,6 +32,7 @@ var yellow = new THREE.Color(0xffff00);
 
 var snake = [];
 var counter = 0;
+var newCubePos;
 
 
 //End Scene
@@ -57,8 +58,8 @@ function init() {
    Physijs scripts.
 */
 function initPhysijs() {
-    Physijs.scripts.worker = './js/physijs_worker.js';
-    Physijs.scripts.ammo = './js/ammo.js';
+    Physijs.scripts.worker = '/js/physijs_worker.js';
+    Physijs.scripts.ammo = '/js/ammo.js';
 }
 
 /**
@@ -128,22 +129,22 @@ function createPointLight(){
     light.shadow.camera.far = 500      // default
     return light;
 }
-
-function placeFood() {
-  // Find a random location that isn't occupied by the snake.
-  var occupy = false;
-  while (!occupy) {
-    food.x = Math.floor(Math.random() * numCols);
-    food.y = Math.floor(Math.random() * numRows);
-    okay = true;
-    for (var i = 0; i < snake.length; ++i) {
-      if (snake[i].x == food.x && snake[i].y == food.y) {
-        occupy = false;
-        break;
-      }
-    }
-  }
-}
+//
+// function placeFood() {
+//   // Find a random location that isn't occupied by the snake.
+//   var occupy = false;
+//   while (!occupy) {
+//     food.x = Math.floor(Math.random() * numCols);
+//     food.y = Math.floor(Math.random() * numRows);
+//     okay = true;
+//     for (var i = 0; i < snake.length; ++i) {
+//       if (snake[i].x == food.x && snake[i].y == food.y) {
+//         occupy = false;
+//         break;
+//       }
+//     }
+//   }
+// }
 
 
 /**
@@ -228,8 +229,8 @@ function addMedBalls(numBalls){
       z = 0;
       var okay = false;
       while (!okay) {
-        x = randN(50)+15;
-        z = randN(50)+15;
+        x = (randN(planeW)-planeW/2)*unit;
+        z = (randN(planeH)-planeH/2)*unit;
         okay = true;
         for (var i = 0; i < snake.length; ++i) {
           if (snake[i].position.x == x && snake[i].position.z == z) {
@@ -239,6 +240,7 @@ function addMedBalls(numBalls){
         }
       }
       ball.position.set(x,0,z);
+      console.log(x+" "+z)
     	scene.add(ball);
 
       //Not working
@@ -260,12 +262,11 @@ function addMedBalls(numBalls){
 }
 
 function randN(n){
-    return Math.random()*n;
+    return Math.floor(Math.random()*n);
 }
 
 function createMedBall(){
-    //var geometry = new THREE.SphereGeometry( 4, 20, 20);
-    var geometry = new THREE.SphereGeometry( 5, 10, 10);
+    var geometry = new THREE.SphereGeometry( unit/2, 10, 10);
     var material = new THREE.MeshLambertMaterial( { color: 0x0D0DD7} );
     var pmaterial = new Physijs.createMaterial(material,0.9,0.5);
     var mesh = new Physijs.BoxMesh( geometry, material );
@@ -291,7 +292,7 @@ function buildMainScene() {
     cubeYellow = addCube(east, 0, south, yellow);
 
     for (i=0; i<gameState.length; i++) {
-      var snakeCube = addPhysCube(i*unit,0,0, white);
+      var snakeCube = addPhysCube(i*unit-unit/2,0,0, white);
       setSelfCol(snakeCube);
       snake.push(snakeCube);
     }
@@ -381,6 +382,7 @@ function moveSnake() {
     snake[i].position.set(pos[0], pos[1], pos[2]);
     pos = temp;
   }
+  newCubePos = pos;
 }
 
 function moveHead() {
@@ -424,10 +426,14 @@ function animate() {
       moveSnake();
       counter = 0;
     }
-    console.log(food.position)
-    console.log(snake[0].position)
+
     if (Math.abs(food.position.x - snake[0].position.x) <= 10 && Math.abs(food.position.z - snake[0].position.z) <= 10) {
        gameState.score++;
+       console.log("adding new cube");
+       var snakeCube = addPhysCube(newCubePos.x,0,newCubePos.z, white);
+       setSelfCol(snakeCube);
+       snake.push(snakeCube);
+       gameState.length++;
        food.position.y = food.position.y - 1000;
        food.__dirtyPosition = true;
        food = addMedBalls(1);
