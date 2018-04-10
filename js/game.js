@@ -439,16 +439,16 @@ function moveSnake() {
 function moveHead() {
   switch(gameState.dir) {
     case 1:
-    snake[0].position.x += unit;
+    snake[0].position.x += 3*unit;
     break;
     case 2:
-    snake[0].position.z += unit;
+    snake[0].position.z += 3*unit;
     break;
     case 3:
-    snake[0].position.x -= unit;
+    snake[0].position.x -= 3*nit;
     break;
     case 4:
-    snake[0].position.z -= unit;
+    snake[0].position.z -= 3*unit;
     break;
   }
   if (outOfBound(0)) {
