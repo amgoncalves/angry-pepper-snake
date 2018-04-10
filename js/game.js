@@ -22,7 +22,7 @@ var west = unit * (-planeW / 2);
 var south = unit * (planeH / 2);
 
 // Misc. state
-var gameState = { camera: 1, length: 6, dir: 3, health: 1, score: 0};
+var gameState = { camera: 1, length: 6, dir: 3, health: 1, score: 0, scene: "start"};
 
 // Constants
 var white = new THREE.Color(0xffffff);
@@ -35,10 +35,14 @@ var snake = [];
 var counter = 0;
 var newCubePos;
 
+var startScene, startCamera, startText;
+
 
 //End Scene
 var endScene2, endCamera2, endText2;
 
+
+createOpenScene();
 init();
 animate();
 
@@ -53,6 +57,47 @@ function init() {
     initScene();
     initListeners();
     buildMainScene();
+}
+
+function createOpenScene(){
+
+  startScene = new THREE.Scene();
+  startText = createBackground('init.png',1);
+
+  startScene.add(startText);
+  var startlight = createPointLight();
+  startlight.position.set(0,200,20);
+  startScene.add(startlight);
+  startCamera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
+  startCamera.position.set(0,50,1);
+  startCamera.lookAt(0,0,0);
+}
+
+function createPointLight(){
+    var light;
+    light = new THREE.PointLight( 0xffffff);
+    light.castShadow = true;
+    //Set up shadow properties for the light
+    light.shadow.mapSize.width = 2048;  // default
+    light.shadow.mapSize.height = 2048; // default
+    light.shadow.camera.near = 0.5;       // default
+    light.shadow.camera.far = 500      // default
+    return light;
+}
+
+function createBackground(image,k){
+    
+    var planeGeometry = new THREE.PlaneGeometry( 210, 100, 128 );
+    var texture = new THREE.TextureLoader().load( '../images/'+image );
+    var planeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff,  map: texture ,side:THREE.DoubleSide} );
+    planeMesh = new THREE.Mesh( planeGeometry, planeMaterial );
+    startScene.add(planeMesh);
+    planeMesh.position.x = 0;
+    planeMesh.position.y = 0;
+    planeMesh.position.z = 0;
+    planeMesh.rotation.x = -Math.PI/2;
+    planeMesh.receiveShadow = true;
+    return planeMesh
 }
 
 /**
@@ -327,6 +372,12 @@ function setSelfCol(cube) {
 */
 function keydown(event) {
     console.log("Keydown: " + event.key);
+    if (gameState.scene == "start" && event.key == "p") {
+      gameState.scene = "main";
+      return;
+    }
+
+
     switch(event.key) {
 	// Switch the cameras
     case "1":
@@ -519,76 +570,51 @@ function moveEnemy() {
    Calls relevent functions to animate the game and update state.
 */
 function animate() {
-    requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
   //  cubeWhite.rotation.y += 0.1;
+  if (gameState.scene == "main") {
     setCamera();
     counter++;
-    if (counter == 50) {
+    if (counter == 10) {
       moveSnake();
       counter = 0;
      moveEnemy()
     }
 
     if (Math.abs(food.position.x - snake[0].position.x) <= 10 && Math.abs(food.position.z - snake[0].position.z) <= 10) {
-       gameState.score++;
-       console.log("adding new cube");
-       var snakeCube = addPhysCube(newCubePos.x,0,newCubePos.z, white);
-       setSelfCol(snakeCube);
-       snake.push(snakeCube);
-       gameState.length++;
-       food.position.y = food.position.y - 1000;
-       food.__dirtyPosition = true;
-       food = addMedBalls(1);
-    }
-	
-    if (Math.abs(enemy1.position.x - snake[0].position.x) <= 10 && Math.abs(enemy1.position.z - snake[0].position.z) <= 10) {
-       // gameState.health--;
-       // enemy1.position.y = enemy1.position.y - 1000;
-       // enemy1.__dirtyPosition = true;
-       //enemy1 = addMedBalls(1);
-      // gameState.scene = 'youlose';
+     gameState.score++;
+     console.log("adding new cube");
+     var snakeCube = addPhysCube(newCubePos.x,0,newCubePos.z, white);
+     setSelfCol(snakeCube);
+     snake.push(snakeCube);
+     gameState.length++;
+     food.position.y = food.position.y - 1000;
+     food.__dirtyPosition = true;
+     food = addMedBalls(1);
+   }
 
-      //gameState.health --;
-    // console.log("out of bound")
-
-    gameState.health = -1;
-    if (gameState.health < 0) {
-      gameState.scene = 'youlose';
-    }
-     // createEndScene2();
-    }
-
-    if (Math.abs(enemy2.position.x - snake[0].position.x) <= 10 && Math.abs(enemy2.position.z - snake[0].position.z) <= 10) {
-       // gameState.health--;
-      // gameState.scene = 'youlose';
-     // createEndScene2();
-
-        gameState.health = -1;
-    
-    if (gameState.health < 0) {
-      gameState.scene = 'youlose';
-    }
-    }
 
     //console.log(snake[1])
     for (var i = 1; i < snake.length; ++i) {
       if (snake[i].position.x == snake[0].position.x && snake[i].position.y == snake[0].position.y && snake[i].position.z == snake[0].position.z) {
-         gameState.health = gameState.health - 100;
-         break;
-      }
-    }
+       gameState.health = gameState.health - 100;
+       break;
+     }
+   }
 
-    if (gameState.health <= 0) {
-        endText2.rotateY(0.005);
-        renderer.render(endScene2, endCamera2 );
-        var info = document.getElementById("info");
-        info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: 0' +'</div>';
-    } else {
-        renderer.render(scene, camera);
-        var info = document.getElementById("info");
-        info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: ' + gameState.health +'</div>';
-    }
+   if (gameState.health <= 0) {
+    endText2.rotateY(0.005);
+    renderer.render(endScene2, endCamera2 );
+    var info = document.getElementById("info");
+    info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: 0' +'</div>';
+  } else {
+    renderer.render(scene, camera);
+    var info = document.getElementById("info");
+    info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: ' + gameState.health +'</div>';
+  }
 
-
-
+ } else if (gameState.scene == "start") {
+   renderer.setSize(window.innerWidth, window.innerHeight);
+   renderer.render( startScene, startCamera );
+ }
 }
