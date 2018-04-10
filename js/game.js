@@ -61,7 +61,7 @@ function init() {
 function createOpenScene(){
 
   startScene = new THREE.Scene();
-  startText = createBackground('start.png',1);
+  startText = createBackground('init.png',1);
 
   startScene.add(startText);
   var startlight = createPointLight();
@@ -86,9 +86,9 @@ function createPointLight(){
 
 function createBackground(image,k){
     
-    var planeGeometry = new THREE.PlaneGeometry( 200, 200, 128 );
+    var planeGeometry = new THREE.PlaneGeometry( 210, 100, 128 );
     var texture = new THREE.TextureLoader().load( '../images/'+image );
-    var planeMaterial = new THREE.MeshLambertMaterial( { color: 0xaaaaaa,  map: texture ,side:THREE.DoubleSide} );
+    var planeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff,  map: texture ,side:THREE.DoubleSide} );
     planeMesh = new THREE.Mesh( planeGeometry, planeMaterial );
     startScene.add(planeMesh);
     planeMesh.position.x = 0;
@@ -368,8 +368,8 @@ function setSelfCol(cube) {
 */
 function keydown(event) {
     console.log("Keydown: " + event.key);
-    if (gameState.scene == 'start' && event.key == 'p') {
-      gameState.scene == 'main';
+    if (gameState.scene == "start" && event.key == "p") {
+      gameState.scene = "main";
       return;
     }
 
@@ -439,16 +439,16 @@ function moveSnake() {
 function moveHead() {
   switch(gameState.dir) {
     case 1:
-    snake[0].position.x += 3*unit;
+    snake[0].position.x += unit;
     break;
     case 2:
-    snake[0].position.z += 3*unit;
+    snake[0].position.z += unit;
     break;
     case 3:
-    snake[0].position.x -= 3*nit;
+    snake[0].position.x -= unit;
     break;
     case 4:
-    snake[0].position.z -= 3*unit;
+    snake[0].position.z -= unit;
     break;
   }
   if (outOfBound(0)) {
@@ -474,7 +474,7 @@ function animate() {
   if (gameState.scene == "main") {
     setCamera();
     counter++;
-    if (counter == 50) {
+    if (counter == 10) {
       moveSnake();
       counter = 0;
     }
