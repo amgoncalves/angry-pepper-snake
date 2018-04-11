@@ -37,6 +37,7 @@ var newCubePos;
 
 var startScene, startCamera, startText;
 
+var speedBound = 15; //bigger, snake moves slower; vice versa
 
 //End Scene
 var endScene2, endCamera2, endText2;
@@ -389,22 +390,22 @@ function keydown(event) {
     case "3":
 	gameState.camera = 3;
 	break;
-  case "d":
+  case "ArrowRight":
   if (gameState.dir != 3) {
     gameState.dir = 1;
   }
   break;
-  case "s":
+  case "ArrowDown":
   if (gameState.dir != 4) {
     gameState.dir = 2;
   }
   break;
-  case "a":
+  case "ArrowLeft":
   if (gameState.dir != 1) {
     gameState.dir = 3;
   }
   break;
-  case "w":
+  case "ArrowUp":
   if (gameState.dir != 2) {
     gameState.dir = 4;
   }
@@ -575,10 +576,10 @@ function animate() {
   if (gameState.scene == "main") {
     setCamera();
     counter++;
-    if (counter == 10) {
+    if (counter == speedBound) {
       moveSnake();
+      moveEnemy();
       counter = 0;
-     moveEnemy()
     }
 
     if (Math.abs(food.position.x - snake[0].position.x) <= 10 && Math.abs(food.position.z - snake[0].position.z) <= 10) {
