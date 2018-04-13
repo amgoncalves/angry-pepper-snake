@@ -35,6 +35,7 @@ var snake = [];
 var counter = 0;
 var newCubePos;
 var moved = true;
+var dir = [[unit,0,0],[0,0,-1*unit],[-1*unit,0,0],[0,0,unit],[0,-1*unit,0],[0,unit,0]];
 
 var startScene, startCamera, startText;
 
@@ -391,7 +392,7 @@ function keydown(event) {
 	gameState.camera = 3;
 	break;
   case "4":
-  gameState.camera = 3;
+  gameState.camera = 4;
   break;
   case "ArrowRight":
   if (gameState.dir != 3 && moved) {
@@ -399,7 +400,7 @@ function keydown(event) {
     moved = false;
   }
   break;
-  case "ArrowDown":
+  case "ArrowUp":
   if (gameState.dir != 4 && moved) {
     gameState.dir = 2;
     moved = false;
@@ -412,7 +413,7 @@ function keydown(event) {
     moved = false;
   }
   break;
-  case "ArrowUp":
+  case "ArrowDown":
   if (gameState.dir != 2 && moved) {
     gameState.dir = 4;
     moved = false;
@@ -447,7 +448,13 @@ function setCamera() {
     case 3:
 	moveCamera(camHeight, camHeight, camHeight);
 	break;
-    }
+    case 4:
+    camera.position.set(snake[0].position.x, snake[0].position.y, snake[0].position.z);
+    var curDir = dir[gameState.dir-1];
+    camera.lookAt(camera.position.x+curDir[0],camera.position.y+curDir[1],camera.position.z+curDir[2]);
+    break;
+  }
+
 }
 
 function moveSnake() {
@@ -456,33 +463,17 @@ function moveSnake() {
   for (i = 1; i < gameState.length; i++) {
     var temp = [snake[i].position.x, snake[i].position.y, snake[i].position.z];
     snake[i].position.set(pos[0], pos[1], pos[2]);
+    console.log(pos)
     pos = temp;
   }
   newCubePos = pos;
 }
 
 function moveHead() {
+  snake[0].position.x += dir[gameState.dir-1][0]
+  snake[0].position.y += dir[gameState.dir-1][1]
+  snake[0].position.z += dir[gameState.dir-1][2]
 
-  switch(gameState.dir) {
-    case 1:
-    snake[0].position.x += unit;
-    break;
-    case 2:
-    snake[0].position.z += unit;
-    break;
-    case 3:
-    snake[0].position.x -= unit;
-    break;
-    case 4:
-    snake[0].position.z -= unit;
-    break;
-    case 5:
-    snake[0].position.y -= unit;
-    break;
-    case 6:
-    snake[0].position.y += unit;
-    break;
-  }
   if (outOfBound(0)) {
     console.log(snake[0].position)
     gameState.health --;
