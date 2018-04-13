@@ -34,6 +34,7 @@ var yellow = new THREE.Color(0xffff00);
 var snake = [];
 var counter = 0;
 var newCubePos;
+var moved = true;
 
 var startScene, startCamera, startText;
 
@@ -86,7 +87,7 @@ function createPointLight(){
 }
 
 function createBackground(image,k){
-    
+
     var planeGeometry = new THREE.PlaneGeometry( 210, 100, 128 );
     var texture = new THREE.TextureLoader().load( '../images/'+image );
     var planeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff,  map: texture ,side:THREE.DoubleSide} );
@@ -176,21 +177,21 @@ function createPointLight(){
     return light;
 }
 
-function placeFood() {
-  // Find a random location that isn't occupied by the snake.
-  var occupy = false;
-  while (!occupy) {
-    food.x = Math.floor(Math.random() * numCols);
-    food.y = Math.floor(Math.random() * numRows);
-    okay = true;
-    for (var i = 0; i < snake.length; ++i) {
-      if (snake[i].x == food.x && snake[i].y == food.y) {
-        occupy = false;
-        break;
-      }
-    }
-  }
-}
+// function placeFood() {
+//   // Find a random location that isn't occupied by the snake.
+//   var occupy = true;
+//   while (occupy) {
+//     food.x = (randN(planeW) - planeW/2) * unit + unit/2;
+//     food.y = (randN(planeH) - planeH/2) * unit + unit/2;
+//     okay = true;
+//     for (var i = 0; i < snake.length; ++i) {
+//       if (snake[i].x == food.x && snake[i].y == food.y) {
+//         occupy = true;
+//       }
+//       occupy = false;
+//     }
+//   }
+// }
 
 
 /**
@@ -271,21 +272,21 @@ function addMedBalls(numBalls){
 
     //for(i=0;i<numBalls;i++){
     	var ball = createMedBall();
-    	x = 0;
-      z = 0;
+      var x, y, z;
       var okay = false;
       while (!okay) {
-        x = (randN(planeW)-planeW/2)*unit;
-        z = (randN(planeH)-planeH/2)*unit;
+        x = (randN(planeW) - planeW/2) * unit + unit/2;
+        z = (randN(planeH) - planeH/2) * unit + unit/2;
+        y = randN(10) * unit
         okay = true;
         for (var i = 0; i < snake.length; ++i) {
-          if (snake[i].position.x == x && snake[i].position.z == z) {
+          if (snake[i].position.x == x && snake[i].position.y == y && snake[i].position.z == z) {
             okay = false;
             break;
           }
         }
       }
-      ball.position.set(x,0,z);
+      ball.position.set(x,y,z);
       console.log(x+" "+z)
     	scene.add(ball);
 
@@ -336,7 +337,7 @@ function buildMainScene() {
     cubeGreen = addCube(west, 0, north, green);
     cubeBlue = addCube(east, 0, north, blue);
     cubeYellow = addCube(east, 0, south, yellow);
-	
+
     enemy1 = addNewEnemy(1);
     enemy2 = addNewEnemy(1);
 
@@ -389,24 +390,44 @@ function keydown(event) {
     case "3":
 	gameState.camera = 3;
 	break;
-  case "d":
-  if (gameState.dir != 3) {
+  case "4":
+  gameState.camera = 3;
+  break;
+  case "ArrowRight":
+  if (gameState.dir != 3 && moved) {
     gameState.dir = 1;
+    moved = false;
   }
   break;
-  case "s":
-  if (gameState.dir != 4) {
+  case "ArrowDown":
+  if (gameState.dir != 4 && moved) {
     gameState.dir = 2;
+    moved = false;
+
   }
   break;
-  case "a":
-  if (gameState.dir != 1) {
+  case "ArrowLeft":
+  if (gameState.dir != 1 && moved) {
     gameState.dir = 3;
+    moved = false;
   }
   break;
-  case "w":
-  if (gameState.dir != 2) {
+  case "ArrowUp":
+  if (gameState.dir != 2 && moved) {
     gameState.dir = 4;
+    moved = false;
+  }
+  break;
+  case ",":
+  if (gameState.dir != 5 && moved) {
+    gameState.dir = 6;
+    moved = false;
+  }
+  break;
+  case ".":
+  if (gameState.dir != 6 && moved && snake[0].position.y > 0) {
+    gameState.dir = 5;
+    moved = false;
   }
   break;
     }
@@ -441,6 +462,7 @@ function moveSnake() {
 }
 
 function moveHead() {
+
   switch(gameState.dir) {
     case 1:
     snake[0].position.x += unit;
@@ -454,8 +476,15 @@ function moveHead() {
     case 4:
     snake[0].position.z -= unit;
     break;
+    case 5:
+    snake[0].position.y -= unit;
+    break;
+    case 6:
+    snake[0].position.y += unit;
+    break;
   }
   if (outOfBound(0)) {
+    console.log(snake[0].position)
     gameState.health --;
     console.log("out of bound")
     if (gameState.health == 0) {
@@ -465,8 +494,8 @@ function moveHead() {
 }
 
 function outOfBound(i) {
-  return (snake[i].position.x <= west+unit/2 || snake[i].position.x >= east-unit/2
-    || snake[i].position.z <= north+unit/2 || snake[i].position.z >= south-unit/2);
+  return (snake[i].position.x < west+unit/2 || snake[i].position.x > east-unit/2
+    || snake[i].position.z < north+unit/2 || snake[i].position.z > south-unit/2);
 }
 
 function EnmOutOfBound(enm1,enm2) {
@@ -548,7 +577,7 @@ function moveEnemy() {
   //   Math.floor(Math.random() * numRows),0) ;
   enemy1.position.set(0,0,0)
   // += 2* unit
- } 
+ }
 
  if (enemy2.position.z < north) {
   // enemy1.position.x += 2* unit;
@@ -557,7 +586,7 @@ function moveEnemy() {
   enemy2.position.set(0,0,0)
   enemy2.position.z += unit;
   // += 2* unit
- } 
+ }
 
 //    if (EnmOutOfBound) {
 // enemy1.position.x += unit;
@@ -571,20 +600,20 @@ function moveEnemy() {
 */
 function animate() {
   requestAnimationFrame(animate);
-  //  cubeWhite.rotation.y += 0.1;
   if (gameState.scene == "main") {
     setCamera();
     counter++;
-    if (counter == 10) {
+    if (counter == 30) {
       moveSnake();
+      moved = true;
       counter = 0;
      moveEnemy()
     }
 
-    if (Math.abs(food.position.x - snake[0].position.x) <= 10 && Math.abs(food.position.z - snake[0].position.z) <= 10) {
+    if (Math.abs(food.position.x - snake[0].position.x) <= 5 && Math.abs(food.position.z - snake[0].position.z) <= 5 && Math.abs(food.position.y - snake[0].position.y) <= 5) {
      gameState.score++;
      console.log("adding new cube");
-     var snakeCube = addPhysCube(newCubePos.x,0,newCubePos.z, white);
+     var snakeCube = addPhysCube(newCubePos.x,newCubePos.y,newCubePos.z, white);
      setSelfCol(snakeCube);
      snake.push(snakeCube);
      gameState.length++;
