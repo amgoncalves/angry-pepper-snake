@@ -376,7 +376,11 @@ function keydown(event) {
       gameState.scene = "main";
       return;
     }
-
+	
+    if (gameState.scene == "youlose" && event.key == "r") {
+      gameState.scene = "start";
+      return;
+    }
 
     switch(event.key) {
 	// Switch the cameras
@@ -572,6 +576,19 @@ function moveEnemy() {
 function animate() {
   requestAnimationFrame(animate);
   //  cubeWhite.rotation.y += 0.1;
+	
+  if (gameState.scene == "youlose") {
+    endScene2 = initScene2();
+    endText2 = createSkyBox('youlose.jpg',10);
+    endScene2.add(endText2);
+    var light2 = createPointLight();
+    light2.position.set(0,200,20);
+    endScene2.add(light2);
+    endCamera2 = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    endCamera2.position.set(0,50,1);
+    endCamera2.lookAt(0,0,0);
+  }
+	
   if (gameState.scene == "main") {
     setCamera();
     counter++;
