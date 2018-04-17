@@ -600,6 +600,28 @@ function animate() {
        gameState.health = gameState.health - 100;
        break;
      }
+	   
+      if (Math.abs(enemy1.position.x - snake[i].position.x) <= 10 && Math.abs(enemy1.position.z - snake[i].position.z) <= 10) {
+
+        gameState.health = -1;
+          if (gameState.health == 0) {
+              gameState.scene = 'youlose';
+            }
+    	   // createEndScene2();
+          break;
+      }
+
+      if (Math.abs(enemy2.position.x - snake[i].position.x) <= 10 && Math.abs(enemy2.position.z - snake[i].position.z) <= 10) {
+     	// gameState.health--;
+    	// gameState.scene = 'youlose';
+    	// createEndScene2();
+
+      	gameState.health = -1;
+      	if (gameState.health < 0) {
+        	gameState.scene = 'youlose';
+      	}
+    		break;
+   }
    }
 
    if (gameState.health <= 0) {
