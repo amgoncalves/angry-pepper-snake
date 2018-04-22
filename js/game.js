@@ -48,6 +48,8 @@ animate();
 
 //food
 var food
+var crunch
+var hiss
 /**
    Instantiate everything.
 */
@@ -122,6 +124,25 @@ function initScene() {
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     moveCamera(0, camHeight, 0);
+
+
+    var audioListener = new THREE.AudioListener();
+    camera.add(audioListener);
+    crunch = new THREE.Audio(audioListener);
+    var audioLoader = new THREE.AudioLoader();
+    audioLoader.load( 'sounds/334209__sethroph__eating-crisps.wav', function( buffer ) {
+	crunch.setBuffer( buffer );
+	crunch.setVolume( 0.5 );
+    });
+    
+    var audioListener2 = new THREE.AudioListener();
+    camera.add(audioListener2);
+    hiss = new THREE.Audio(audioListener2);
+    var audioLoader2 = new THREE.AudioLoader();    
+    audioLoader2.load( 'sounds/343927__reitanna__hiss2.wav', function( buffer ) {
+	hiss.setBuffer( buffer );
+	hiss.setVolume( 0.5 );
+    });    
 }
 
 //Create End scene
@@ -296,6 +317,7 @@ function addMedBalls(numBalls){
     				   console.log("ball "+i+" hit the avatar");
     				   //soundEffect('good.wav');
     				   gameState.score += 1;  // add one to the score
+				   crunch.play();
     				   // make the ball drop below the scene ..
     				   // threejs doesn't let us remove it from the schene...
     				   this.position.y = this.position.y - 100;
@@ -649,6 +671,7 @@ function animate() {
 	    if (Math.abs(food.position.x - snake[0].position.x) <= 10 && Math.abs(food.position.z - snake[0].position.z) <= 10) {
 		gameState.score++;
 		console.log("adding new cube");
+		crunch.play();
 		var snakeCube = addPhysCube(newCubePos.x,0,newCubePos.z, white);
 		setSelfCol(snakeCube);
 		snake.push(snakeCube);
@@ -667,7 +690,7 @@ function animate() {
 		}
 		
 		if (Math.abs(enemy1.position.x - snake[i].position.x) <= 10 && Math.abs(enemy1.position.z - snake[i].position.z) <= 10) {
-
+		    hiss.play();
 		    gameState.health = -1;
 		    if (gameState.health == 0) {
 			gameState.scene = 'youlose';
@@ -680,7 +703,7 @@ function animate() {
      		    // gameState.health--;
     		    // gameState.scene = 'youlose';
     		    // createEndScene2();
-
+		    hiss.play();
       		    gameState.health = -1;
       		    if (gameState.health < 0) {
         		gameState.scene = 'youlose';
