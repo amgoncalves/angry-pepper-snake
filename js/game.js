@@ -48,8 +48,12 @@ animate();
 
 //food
 var food
+
+// sounds
+var music
 var crunch
 var hiss
+
 /**
    Instantiate everything.
 */
@@ -142,7 +146,18 @@ function initScene() {
     audioLoader2.load( 'sounds/343927__reitanna__hiss2.wav', function( buffer ) {
 	hiss.setBuffer( buffer );
 	hiss.setVolume( 0.5 );
-    });    
+    });
+
+    var audioListener3 = new THREE.AudioListener();
+    camera.add(audioListener3);
+    music = new THREE.Audio(audioListener3);
+    var audioLoader3 = new THREE.AudioLoader();    
+    audioLoader3.load( 'sounds/381384__uso-sketch__jungle.wav', function( buffer ) {
+	music.setBuffer( buffer );
+	music.setLoop( true );
+	music.setVolume( 0.5 );
+	music.play();	
+    });
 }
 
 //Create End scene
