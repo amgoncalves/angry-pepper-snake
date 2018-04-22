@@ -146,7 +146,7 @@ function initScene2(){
 }
 
 function createSkySphere(image) {
-  var skyGeo = new THREE.SphereGeometry(200, 25, 25);
+  var skyGeo = new THREE.SphereGeometry(300, 25, 25);
   var texture = new THREE.TextureLoader().load( "./images/"+image );
   var material = new THREE.MeshPhongMaterial({ map: texture });
   var sky = new THREE.Mesh(skyGeo, material);
