@@ -145,6 +145,15 @@ function initScene2(){
     return scene;
 }
 
+function createSkySphere(image) {
+  var skyGeo = new THREE.SphereGeometry(200, 25, 25);
+  var texture = new THREE.TextureLoader().load( "./images/"+image );
+  var material = new THREE.MeshPhongMaterial({ map: texture });
+  var sky = new THREE.Mesh(skyGeo, material);
+    sky.material.side = THREE.BackSide;
+    scene.add(sky);
+}
+
 function createSkyBox(image,k){
   // creating a textured plane which receives shadows
   var geometry = new THREE.SphereGeometry( 80, 80, 80 );
@@ -329,7 +338,7 @@ function createMedBall(){
 function buildMainScene() {
     addLighting();
     addGround();
-  //  cubeWhite = addCube(0,0,0, white);
+    createSkySphere('jungle.jpg');
 
     // Corners of the ground plane
 
