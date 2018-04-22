@@ -347,7 +347,8 @@ function buildMainScene() {
     }
 
     food = addMedBalls(1)
-
+    // Loading the object slows down the application by a considerable amount...
+    //loadApple();
 }
 
 function setSelfCol(cube) {
@@ -591,6 +592,24 @@ function moveEnemy() {
     // enemy2.position.z += unit;
     //   }
 
+}
+
+function loadApple() {
+    var loader = new THREE.OBJLoader();
+    loader.load("../models/apple/Manzana.obj",
+		function(obj) {
+		    console.log("loading obj file");
+		    obj.scale.x=0.005;
+		    obj.scale.y=0.005;
+		    obj.scale.z=0.005;
+		    food.add(obj);
+		},
+		function(xhr){
+		    console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );},
+
+		function(err){
+		    console.log("error in loading: "+err);}
+	       )
 }
 
 /**
