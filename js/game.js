@@ -250,9 +250,13 @@ function addCube(x, y, z, col) {
     return cube;
 }
 
-function addPhysCube(x, y, z, col) {
+function addSnakeCube(x, y, z, col) {
   var geometry = new THREE.BoxGeometry(unit, unit, unit);
-  var material = new THREE.MeshBasicMaterial({ color: col });
+  var texture = new THREE.TextureLoader().load('./textures/snake.jpg');
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(0.5, 0.5);
+  var material = new THREE.MeshLambertMaterial({ color: 0xffffff,  map: texture, side: THREE.DoubleSide });
   var pmaterial = new Physijs.createMaterial(material, 0.9, 0.05);
   var cube = new Physijs.BoxMesh( geometry, pmaterial );
   scene.add(cube);
@@ -352,7 +356,7 @@ function buildMainScene() {
     enemy2 = addNewEnemy(1);
 
     for (i=0; i<gameState.length; i++) {
-      var snakeCube = addPhysCube(i*unit-unit/2,0,0, white);
+      var snakeCube = addSnakeCube(i*unit-unit/2,0,0, white);
       setSelfCol(snakeCube);
       snake.push(snakeCube);
     }
@@ -458,8 +462,9 @@ function setCamera() {
 	moveCamera(camHeight, camHeight, camHeight);
 	break;
     case 4:
-    camera.position.set(snake[0].position.x, snake[0].position.y, snake[0].position.z);
     var curDir = dir[gameState.dir-1];
+    camera.position.set(snake[0].position.x+curDir[0],
+      snake[0].position.y+curDir[1], snake[0].position.z+curDir[2]);
     camera.lookAt(camera.position.x+curDir[0],camera.position.y+curDir[1],camera.position.z+curDir[2]);
     break;
   }
@@ -613,7 +618,7 @@ function animate() {
     if (Math.abs(food.position.x - snake[0].position.x) <= 5 && Math.abs(food.position.z - snake[0].position.z) <= 5 && Math.abs(food.position.y - snake[0].position.y) <= 5) {
      gameState.score++;
      console.log("adding new cube");
-     var snakeCube = addPhysCube(newCubePos.x,newCubePos.y,newCubePos.z, white);
+     var snakeCube = addSnakeCube(newCubePos.x,newCubePos.y,newCubePos.z, white);
      setSelfCol(snakeCube);
      snake.push(snakeCube);
      gameState.length++;
