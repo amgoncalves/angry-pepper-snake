@@ -413,6 +413,26 @@ function keydown(event) {
 	    gameState.dir = 4;
 	}
 	break;
+    case "ArrowRight":
+	if (gameState.dir != 3) {
+	    gameState.dir = 1;
+	}
+	break;
+    case "ArrowDown":
+	if (gameState.dir != 4) {
+	    gameState.dir = 2;
+	}
+	break;
+    case "ArrowLeft":
+	if (gameState.dir != 1) {
+	    gameState.dir = 3;
+	}
+	break;
+    case "ArrowUp":
+	if (gameState.dir != 2) {
+	    gameState.dir = 4;
+	}
+	break;
     case "Escape":
 	gameState.pause = !gameState.pause;
 	break;
