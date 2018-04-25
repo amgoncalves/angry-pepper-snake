@@ -1,5 +1,5 @@
 /**
-    JavaScript for the main game.
+   JavaScript for the main game.
 */
 
 // Objects
@@ -22,7 +22,7 @@ var west = unit * (-planeW / 2);
 var south = unit * (planeH / 2);
 
 // Misc. state
-var gameState = { camera: 1, length: 6, dir: 3, health: 1, score: 0, scene: "start"};
+var gameState = { camera: 1, length: 6, dir: 3, health: 1, score: 0, scene: "start", pause: false };
 
 // Constants
 var white = new THREE.Color(0xffffff);
@@ -50,6 +50,12 @@ animate();
 
 //food
 var food
+
+// sounds
+var music
+var crunch
+var hiss
+
 /**
    Instantiate everything.
 */
@@ -62,17 +68,16 @@ function init() {
 }
 
 function createOpenScene(){
+    startScene = new THREE.Scene();
+    startText = createBackground('init.png',1);
 
-  startScene = new THREE.Scene();
-  startText = createBackground('init.png',1);
-
-  startScene.add(startText);
-  var startlight = createPointLight();
-  startlight.position.set(0,200,20);
-  startScene.add(startlight);
-  startCamera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
-  startCamera.position.set(0,50,1);
-  startCamera.lookAt(0,0,0);
+    startScene.add(startText);
+    var startlight = createPointLight();
+    startlight.position.set(0,200,20);
+    startScene.add(startlight);
+    startCamera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    startCamera.position.set(0,50,1);
+    startCamera.lookAt(0,0,0);
 }
 
 function createPointLight(){
@@ -88,7 +93,6 @@ function createPointLight(){
 }
 
 function createBackground(image,k){
-
     var planeGeometry = new THREE.PlaneGeometry( 210, 100, 128 );
     var texture = new THREE.TextureLoader().load( '../images/'+image );
     var planeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff,  map: texture ,side:THREE.DoubleSide} );
@@ -115,20 +119,18 @@ function initPhysijs() {
 */
 function initScene() {
     scene = new Physijs.Scene();
-
     renderer = new THREE.WebGLRenderer();
-
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
     camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     moveCamera(0, camHeight, 0);
+    initSounds();    
 }
 
 //Create End scene
-function createEndScene2(){
+function createEndScene2() {
     endScene2 = initScene2();
     endText2 = createSkyBox('youlose.jpg',10);
     endScene2.add(endText2);
@@ -140,40 +142,62 @@ function createEndScene2(){
     endCamera2.lookAt(0,0,0);
 }
 
-function initScene2(){
-    //scene = new THREE.Scene();
+function initScene2() {
     var scene = new Physijs.Scene();
     return scene;
 }
 
 function createSkySphere(image) {
-  var skyGeo = new THREE.SphereGeometry(300, 25, 25);
-  var texture = new THREE.TextureLoader().load( "./images/"+image );
-  var material = new THREE.MeshPhongMaterial({ map: texture });
-  var sky = new THREE.Mesh(skyGeo, material);
+    var skyGeo = new THREE.SphereGeometry(300, 25, 25);
+    var texture = new THREE.TextureLoader().load( "./images/"+image );
+    var material = new THREE.MeshPhongMaterial({ map: texture });
+    var sky = new THREE.Mesh(skyGeo, material);
     sky.material.side = THREE.BackSide;
     scene.add(sky);
 }
 
-function createSkyBox(image,k){
-  // creating a textured plane which receives shadows
-  var geometry = new THREE.SphereGeometry( 80, 80, 80 );
-  var texture = new THREE.TextureLoader().load( './images/'+image );
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set( k, k );
-  var material = new THREE.MeshLambertMaterial( { color: 0xffffff,  map: texture ,side:THREE.DoubleSide} );
-  //var pmaterial = new Physijs.createMaterial(material,0.9,0.5);
-  //var mesh = new THREE.Mesh( geometry, material );
-  var mesh = new THREE.Mesh( geometry, material, 0 );
+function createSkyBox(image,k) {
+    // creating a textured plane which receives shadows
+    var geometry = new THREE.SphereGeometry( 80, 80, 80 );
+    var texture = new THREE.TextureLoader().load( './images/'+image );
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set( k, k );
+    var material = new THREE.MeshLambertMaterial( { color: 0xffffff,  map: texture ,side:THREE.DoubleSide} );
+    var mesh = new THREE.Mesh( geometry, material, 0 );
+    mesh.receiveShadow = false;
+    return mesh
+}
 
-  mesh.receiveShadow = false;
+function initSounds() {
+    var audioListener = new THREE.AudioListener();
+    camera.add(audioListener);
+    crunch = new THREE.Audio(audioListener);
+    var audioLoader = new THREE.AudioLoader();
+    audioLoader.load( './sounds/334209__sethroph__eating-crisps.wav', function( buffer ) {
+	crunch.setBuffer( buffer );
+	crunch.setVolume( 0.5 );
+    });
+    
+    var audioListener2 = new THREE.AudioListener();
+    camera.add(audioListener2);
+    hiss = new THREE.Audio(audioListener2);
+    var audioLoader2 = new THREE.AudioLoader();    
+    audioLoader2.load( './sounds/343927__reitanna__hiss2.wav', function( buffer ) {
+	hiss.setBuffer( buffer );
+	hiss.setVolume( 0.5 );
+    });
 
-
-  return mesh
-  // we need to rotate the mesh 90 degrees to make it horizontal not vertical
-
-
+    var audioListener3 = new THREE.AudioListener();
+    camera.add(audioListener3);
+    music = new THREE.Audio(audioListener3);
+    var audioLoader3 = new THREE.AudioLoader();    
+    audioLoader3.load( './sounds/381384__uso-sketch__jungle.wav', function( buffer ) {
+	music.setBuffer( buffer );
+	music.setLoop( true );
+	music.setVolume( 0.5 );
+	music.play();	
+    });    
 }
 
 function createPointLight(){
@@ -187,23 +211,6 @@ function createPointLight(){
     light.shadow.camera.far = 500      // default
     return light;
 }
-
-// function placeFood() {
-//   // Find a random location that isn't occupied by the snake.
-//   var occupy = true;
-//   while (occupy) {
-//     food.x = (randN(planeW) - planeW/2) * unit + unit/2;
-//     food.y = (randN(planeH) - planeH/2) * unit + unit/2;
-//     okay = true;
-//     for (var i = 0; i < snake.length; ++i) {
-//       if (snake[i].x == food.x && snake[i].y == food.y) {
-//         occupy = true;
-//       }
-//       occupy = false;
-//     }
-//   }
-// }
-
 
 /**
    Create event listeners to respond to operations.
@@ -252,17 +259,17 @@ function addCube(x, y, z, col) {
 }
 
 function addSnakeCube(x, y, z, col) {
-  var geometry = new THREE.BoxGeometry(unit, unit, unit);
-  var texture = new THREE.TextureLoader().load('./textures/snake.jpg');
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(0.5, 0.5);
-  var material = new THREE.MeshLambertMaterial({ color: 0xffffff,  map: texture, side: THREE.DoubleSide });
-  var pmaterial = new Physijs.createMaterial(material, 0.9, 0.05);
-  var cube = new Physijs.BoxMesh( geometry, pmaterial );
-  scene.add(cube);
-  cube.position.set(x,y,z);
-  return cube;
+    var geometry = new THREE.BoxGeometry(unit, unit, unit);
+    var texture = new THREE.TextureLoader().load('./textures/snake.jpg');
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(0.5, 0.5);
+    var material = new THREE.MeshLambertMaterial({ color: 0xffffff,  map: texture, side: THREE.DoubleSide });
+    var pmaterial = new Physijs.createMaterial(material, 0.9, 0.05);
+    var cube = new Physijs.BoxMesh( geometry, pmaterial );
+    scene.add(cube);
+    cube.position.set(x,y,z);
+    return cube;
 }
 
 /**
@@ -284,42 +291,39 @@ function addGround() {
 }
 
 function addMedBalls(numBalls){
-
-    //for(i=0;i<numBalls;i++){
-    	var ball = createMedBall();
-      var x, y, z;
-      var okay = false;
-      while (!okay) {
+    var ball = createMedBall();
+    var x, y, z;
+    var okay = false;
+    while (!okay) {
         x = (randN(planeW) - planeW/2) * unit + unit/2;
         z = (randN(planeH) - planeH/2) * unit + unit/2;
         y = randN(10) * unit
         okay = true;
         for (var i = 0; i < snake.length; ++i) {
-          if (snake[i].position.x == x && snake[i].position.y == y && snake[i].position.z == z) {
-            okay = false;
-            break;
-          }
+            if (snake[i].position.x == x && snake[i].position.y == y && snake[i].position.z == z) {
+		okay = false;
+		break;
+            }
         }
-      }
-      ball.position.set(x,y,z);
-      console.log(x+" "+z)
-    	scene.add(ball);
+    }
+    ball.position.set(x,y,z);
+    console.log(x+" "+z)
+    scene.add(ball);
 
-      //Not working
-    	ball.addEventListener( 'collision',
-    			       function( other_object, relative_velocity, relative_rotation, contact_normal ) {
-    				   if (other_object==snake[0]){
-    				       console.log("ball "+i+" hit the avatar");
-    				       //soundEffect('good.wav');
-    				       gameState.score += 1;  // add one to the score
-    				       // make the ball drop below the scene ..
-    				       // threejs doesn't let us remove it from the schene...
-    				       this.position.y = this.position.y - 100;
-    				       this.__dirtyPosition = true;
-    				   }
+    //Not working
+    ball.addEventListener( 'collision',
+    			   function( other_object, relative_velocity, relative_rotation, contact_normal ) {
+    			       if (other_object==snake[0]){
+    				   console.log("ball "+i+" hit the avatar");
+    				   //soundEffect('good.wav');
+    				   gameState.score += 1;  // add one to the score
+    				   // make the ball drop below the scene ..
+    				   // threejs doesn't let us remove it from the schene...
+    				   this.position.y = this.position.y - 100;
+    				   this.__dirtyPosition = true;
     			       }
-    			     )
-    //}
+    			   }
+    			 )
     return ball;
 }
 
@@ -347,19 +351,19 @@ function buildMainScene() {
     createSkySphere('jungle.jpg');
 
     var WIDTH = window.innerWidth;
-		var HEIGHT = window.innerHeight;
+    var HEIGHT = window.innerHeight;
     //var geometry = new THREE.CircleBufferGeometry( 40, 64 );
     var geometry = new THREE.PlaneGeometry(unit * planeW + unit, unit * planeH + unit);
-		groundMirror = new THREE.Reflector( geometry, {
-			clipBias: 0.003,
-			textureWidth: WIDTH * window.devicePixelRatio,
-			textureHeight: HEIGHT * window.devicePixelRatio,
-			color: 0x777777,
-			recursion: 1
-		} );
-		groundMirror.position.y = -5;
-		groundMirror.rotateX( - Math.PI / 2 );
-		scene.add( groundMirror );
+    groundMirror = new THREE.Reflector( geometry, {
+	clipBias: 0.003,
+	textureWidth: WIDTH * window.devicePixelRatio,
+	textureHeight: HEIGHT * window.devicePixelRatio,
+	color: 0x777777,
+	recursion: 1
+    } );
+    groundMirror.position.y = -5;
+    groundMirror.rotateX( - Math.PI / 2 );
+    scene.add( groundMirror );
 
     // Corners of the ground plane
     cubeRed = addCube(west, 0, south, red);
@@ -371,9 +375,9 @@ function buildMainScene() {
     enemy2 = addNewEnemy(1);
 
     for (i=0; i<gameState.length; i++) {
-      var snakeCube = addSnakeCube(i*unit-unit/2,0,0, white);
-      setSelfCol(snakeCube);
-      snake.push(snakeCube);
+	var snakeCube = addSnakeCube(i*unit-unit/2,0,0, white);
+	setSelfCol(snakeCube);
+	snake.push(snakeCube);
     }
 
     food = addMedBalls(1)
@@ -381,20 +385,20 @@ function buildMainScene() {
 }
 
 function setSelfCol(cube) {
-  console.log("I am here");
-  cube.addEventListener( 'collision',
-		function( other_object, relative_velocity, relative_rotation, contact_normal ) {
-      console.log(other_object);
-      for (c in snake) {
-        if (other_object== c){
-          gameState.health --;
-          if (gameState.health == 0) {
-            console.log("self collision")
-            gameState.scene = 'youlose';
-          }
-        }
-      }
-		})
+    console.log("I am here");
+    cube.addEventListener( 'collision',
+			   function( other_object, relative_velocity, relative_rotation, contact_normal ) {
+			       console.log(other_object);
+			       for (c in snake) {
+				   if (other_object== c){
+				       gameState.health --;
+				       if (gameState.health == 0) {
+					   console.log("self collision")
+					   gameState.scene = 'youlose';
+				       }
+				   }
+			       }
+			   })
 }
 
 /**
@@ -403,10 +407,9 @@ function setSelfCol(cube) {
 function keydown(event) {
     console.log("Keydown: " + event.key);
     if (gameState.scene == "start" && event.key == "p") {
-      gameState.scene = "main";
-      return;
+	gameState.scene = "main";
+	return;
     }
-
 
     switch(event.key) {
 	// Switch the cameras
@@ -419,46 +422,49 @@ function keydown(event) {
     case "3":
 	gameState.camera = 3;
 	break;
-  case "4":
-  gameState.camera = 4;
-  break;
-  case "ArrowRight":
-  if (gameState.dir != 3 && moved) {
-    gameState.dir = 1;
-    moved = false;
-  }
-  break;
-  case "ArrowUp":
-  if (gameState.dir != 4 && moved) {
-    gameState.dir = 2;
-    moved = false;
+    case "4":
+	gameState.camera = 4;
+	break;
+    case "ArrowRight":
+	if (gameState.dir != 3 && moved) {
+	    gameState.dir = 1;
+	    moved = false;
+	}
+	break;
+    case "ArrowUp":
+	if (gameState.dir != 4 && moved) {
+	    gameState.dir = 2;
+	    moved = false;
 
-  }
-  break;
-  case "ArrowLeft":
-  if (gameState.dir != 1 && moved) {
-    gameState.dir = 3;
-    moved = false;
-  }
-  break;
-  case "ArrowDown":
-  if (gameState.dir != 2 && moved) {
-    gameState.dir = 4;
-    moved = false;
-  }
-  break;
-  case ",":
-  if (gameState.dir != 5 && moved) {
-    gameState.dir = 6;
-    moved = false;
-  }
-  break;
-  case ".":
-  if (gameState.dir != 6 && moved && snake[0].position.y > 0) {
-    gameState.dir = 5;
-    moved = false;
-  }
-  break;
+	}
+	break;
+    case "ArrowLeft":
+	if (gameState.dir != 1 && moved) {
+	    gameState.dir = 3;
+	    moved = false;
+	}
+	break;
+    case "ArrowDown":
+	if (gameState.dir != 2 && moved) {
+	    gameState.dir = 4;
+	    moved = false;
+	}
+	break;
+    case ",":
+	if (gameState.dir != 5 && moved) {
+	    gameState.dir = 6;
+	    moved = false;
+	}
+	break;
+    case ".":
+	if (gameState.dir != 6 && moved && snake[0].position.y > 0) {
+	    gameState.dir = 5;
+	    moved = false;
+	}
+	break;
+    case "Escape":
+	gameState.pause = !gameState.pause;
+	break;	
     }
 }
 
@@ -477,57 +483,57 @@ function setCamera() {
 	moveCamera(camHeight, camHeight, camHeight);
 	break;
     case 4:
-    var curDir = dir[gameState.dir-1];
-    camera.position.set(snake[0].position.x+curDir[0],
-      snake[0].position.y+curDir[1], snake[0].position.z+curDir[2]);
-    camera.lookAt(camera.position.x+curDir[0],camera.position.y+curDir[1],camera.position.z+curDir[2]);
-    break;
-  }
+	var curDir = dir[gameState.dir-1];
+	camera.position.set(snake[0].position.x+curDir[0],
+			    snake[0].position.y+curDir[1], snake[0].position.z+curDir[2]);
+	camera.lookAt(camera.position.x+curDir[0],camera.position.y+curDir[1],camera.position.z+curDir[2]);
+	break;
+    }
 
 }
 
 function moveSnake() {
-  var pos = [snake[0].position.x, snake[0].position.y, snake[0].position.z];
-  moveHead();
-  for (i = 1; i < gameState.length; i++) {
-    var temp = [snake[i].position.x, snake[i].position.y, snake[i].position.z];
-    snake[i].position.set(pos[0], pos[1], pos[2]);
-    console.log(pos)
-    pos = temp;
-  }
-  newCubePos = pos;
+    var pos = [snake[0].position.x, snake[0].position.y, snake[0].position.z];
+    moveHead();
+    for (i = 1; i < gameState.length; i++) {
+	var temp = [snake[i].position.x, snake[i].position.y, snake[i].position.z];
+	snake[i].position.set(pos[0], pos[1], pos[2]);
+	console.log(pos)
+	pos = temp;
+    }
+    newCubePos = pos;
 }
 
 function moveHead() {
-  snake[0].position.x += dir[gameState.dir-1][0]
-  snake[0].position.y += dir[gameState.dir-1][1]
-  snake[0].position.z += dir[gameState.dir-1][2]
+    snake[0].position.x += dir[gameState.dir-1][0]
+    snake[0].position.y += dir[gameState.dir-1][1]
+    snake[0].position.z += dir[gameState.dir-1][2]
 
-  if (outOfBound(0)) {
-    console.log(snake[0].position)
-    gameState.health --;
-    console.log("out of bound")
-    if (gameState.health == 0) {
-      gameState.scene = 'youlose';
+    if (outOfBound(0)) {
+	console.log(snake[0].position)
+	gameState.health --;
+	console.log("out of bound")
+	if (gameState.health == 0) {
+	    hiss.play();
+	    gameState.scene = 'youlose';
+	}
     }
-  }
 }
 
 function outOfBound(i) {
-  return (snake[i].position.x < west+unit/2 || snake[i].position.x > east-unit/2
-    || snake[i].position.z < north+unit/2 || snake[i].position.z > south-unit/2);
+    return (snake[i].position.x < west+unit/2 || snake[i].position.x > east-unit/2
+	    || snake[i].position.z < north+unit/2 || snake[i].position.z > south-unit/2);
 }
 
 function EnmOutOfBound(enm1,enm2) {
-  return (enm1.position.x <= west+unit/2 || enm1.position.x >= east-unit/2
-    || enm1.position.z <= north+unit/2 || enm1.position.z >= south-unit/2 ||
-enm2.position.x <= west+unit/2 || enm2.position.x >= east-unit/2
-    || enm2.position.z <= north+unit/2 || enm2.position.z >= south-unit/2
-    );
+    return (enm1.position.x <= west+unit/2 || enm1.position.x >= east-unit/2
+	    || enm1.position.z <= north+unit/2 || enm1.position.z >= south-unit/2 ||
+	    enm2.position.x <= west+unit/2 || enm2.position.x >= east-unit/2
+	    || enm2.position.z <= north+unit/2 || enm2.position.z >= south-unit/2
+	   );
 }
 
 function createSphere(){
-    //var geometry = new THREE.SphereGeometry( 4, 20, 20);
     var geometry = new THREE.SphereGeometry( 5, 10, 10);
     var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
     var pmaterial = new Physijs.createMaterial(material,0.9,0.5);
@@ -537,137 +543,125 @@ function createSphere(){
     return mesh;
 }
 
-
 function createBall(){
-		//var geometry = new THREE.SphereGeometry( 4, 20, 20);
-		var geometry = new THREE.SphereGeometry( 1, 16, 16);
-		var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
-		var pmaterial = new Physijs.createMaterial(material,0.9,0.95);
+    var geometry = new THREE.SphereGeometry( 1, 16, 16);
+    var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
+    var pmaterial = new Physijs.createMaterial(material,0.9,0.95);
     var mesh = new Physijs.BoxMesh( geometry, pmaterial );
-		mesh.setDamping(0.1,0.1);
-		mesh.castShadow = true;
-		return mesh;
-	}
+    mesh.setDamping(0.1,0.1);
+    mesh.castShadow = true;
+    return mesh;
+}
 
-
-	function addNewEnemy(numBalls){
-
-    //for(i=0;i<numBalls;i++){
-    	var ball = createSphere();
-    	x = 0;
-      z = 0;
-      var okay = false;
-      while (!okay) {
+function addNewEnemy(numBalls){
+    var ball = createSphere();
+    x = 0;
+    z = 0;
+    var okay = false;
+    while (!okay) {
         x = randN(50)+15;
         z = randN(50)+15;
         okay = true;
         for (var i = 0; i < snake.length; ++i) {
-          if (snake[i].position.x == x && snake[i].position.z == z) {
-            okay = false;
-            break;
-          }
+            if (snake[i].position.x == x && snake[i].position.z == z) {
+		okay = false;
+		break;
+            }
         }
-      }
-      ball.position.set(x,0,z);
-    	scene.add(ball);
+    }
+    ball.position.set(x,0,z);
+    scene.add(ball);
 
-    	ball.addEventListener( 'collision',
-    			       function( other_object, relative_velocity, relative_rotation, contact_normal ) {
-    				   if (other_object==snake[0]){
-    				       console.log("enemy "+i+" hit the snake");
-    				       gameState.score -= 1;  // add one to the score
-    				       // make the ball drop below the scene ..
-    				       // threejs doesn't let us remove it from the schene...
-    				       this.position.y = this.position.y - 100;
-    				       this.__dirtyPosition = true;
-    				   }
+    ball.addEventListener( 'collision',
+    			   function( other_object, relative_velocity, relative_rotation, contact_normal ) {
+    			       if (other_object==snake[0]){
+    				   console.log("enemy "+i+" hit the snake");
+    				   gameState.score -= 1;  // add one to the score
+    				   // make the ball drop below the scene ..
+    				   // threejs doesn't let us remove it from the schene...
+    				   this.position.y = this.position.y - 100;
+    				   this.__dirtyPosition = true;
     			       }
-    			     )
-    //}
+    			   }
+    			 )
     return ball;
 }
 
 function moveEnemy() {
+    enemy1.position.x -=  unit;
+    enemy2.position.z -= unit;
+    if (enemy1.position.x < west) {
+	enemy1.position.x += unit;
+	enemy1.position.set(0,0,0)
+    }
 
-  enemy1.position.x -=  unit;
-  enemy2.position.z -= unit;
- if (enemy1.position.x < west) {
-  enemy1.position.x += unit;
-  // enemy1.position.set(Math.floor(Math.random() * numCols),
-  //   Math.floor(Math.random() * numRows),0) ;
-  enemy1.position.set(0,0,0)
-  // += 2* unit
- }
-
- if (enemy2.position.z < north) {
-  // enemy1.position.x += 2* unit;
-  // enemy1.position.set(Math.floor(Math.random() * numCols),
-  //   Math.floor(Math.random() * numRows),0) ;
-  enemy2.position.set(0,0,0)
-  enemy2.position.z += unit;
-  // += 2* unit
- }
-
-//    if (EnmOutOfBound) {
-// enemy1.position.x += unit;
-// enemy2.position.z += unit;
-//   }
-
+    if (enemy2.position.z < north) {
+	enemy2.position.set(0,0,0)
+	enemy2.position.z += unit;
+    }
 }
 
 /**
    Calls relevent functions to animate the game and update state.
 */
 function animate() {
-  requestAnimationFrame(animate);
-  if (gameState.scene == "main") {
-    setCamera();
-    counter++;
-    if (counter == 30) {
-      moveSnake();
-      moved = true;
-      counter = 0;
-     moveEnemy()
+    requestAnimationFrame(animate);
+    if (gameState.scene == "main") {
+	if (gameState.pause) {
+	    setCamera();
+	    renderer.render(scene, camera);
+	    var info = document.getElementById("info");
+	    info.innerHTML='<div style="font-size:24pt">*paused* Camera: ' + gameState.camera  + '.  Press 1, 2, or 3 to change camera.  Press esc to resume.</div>';	    	    
+	} else {
+	    setCamera();
+	    counter++;
+	    if (counter == 30) {
+		moveSnake();
+		moved = true;
+		counter = 0;
+		moveEnemy()
+	    }
+
+	    if (Math.abs(food.position.x - snake[0].position.x) <= 5 && Math.abs(food.position.z - snake[0].position.z) <= 5 && Math.abs(food.position.y - snake[0].position.y) <= 5) {
+		gameState.score++;
+		console.log("adding new cube");
+		crunch.play();
+		var snakeCube = addSnakeCube(newCubePos.x,newCubePos.y,newCubePos.z, white);
+		setSelfCol(snakeCube);
+		snake.push(snakeCube);
+		gameState.length++;
+		food.position.y = food.position.y - 1000;
+		food.__dirtyPosition = true;
+		food = addMedBalls(1);
+	    }
+
+	    //console.log(snake[1])
+	    for (var i = 1; i < snake.length; ++i) {
+		if (snake[i].position.x == snake[0].position.x && snake[i].position.y == snake[0].position.y && snake[i].position.z == snake[0].position.z) {
+		    hiss.play();
+		    gameState.health = gameState.health - 100;
+		    break;
+		}
+	    }
+
+	    if (snake[0].position.y <= -5) {
+		gameState.health = gameState.health - 100;
+	    }
+
+	    if (gameState.health <= 0) {
+		endText2.rotateX(0.005);
+		renderer.render(endScene2, endCamera2 );
+		var info = document.getElementById("info");
+		info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: 0' +'</div>';
+	    } else {
+		renderer.render(scene, camera);
+		var info = document.getElementById("info");
+		info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: ' + gameState.health +'</div>';
+	    }
+	}
+
+    } else if (gameState.scene == "start") {
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.render( startScene, startCamera );
     }
-
-    if (Math.abs(food.position.x - snake[0].position.x) <= 5 && Math.abs(food.position.z - snake[0].position.z) <= 5 && Math.abs(food.position.y - snake[0].position.y) <= 5) {
-     gameState.score++;
-     console.log("adding new cube");
-     var snakeCube = addSnakeCube(newCubePos.x,newCubePos.y,newCubePos.z, white);
-     setSelfCol(snakeCube);
-     snake.push(snakeCube);
-     gameState.length++;
-     food.position.y = food.position.y - 1000;
-     food.__dirtyPosition = true;
-     food = addMedBalls(1);
-   }
-
-
-    //console.log(snake[1])
-    for (var i = 1; i < snake.length; ++i) {
-      if (snake[i].position.x == snake[0].position.x && snake[i].position.y == snake[0].position.y && snake[i].position.z == snake[0].position.z) {
-       gameState.health = gameState.health - 100;
-       break;
-     }
-   }
-
-   if (snake[0].position.y <= -5) {
-     gameState.health = gameState.health - 100;
-   }
-
-   if (gameState.health <= 0) {
-    endText2.rotateX(0.005);
-    renderer.render(endScene2, endCamera2 );
-    var info = document.getElementById("info");
-    info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: 0' +'</div>';
-  } else {
-    renderer.render(scene, camera);
-    var info = document.getElementById("info");
-    info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: ' + gameState.health +'</div>';
-  }
-
- } else if (gameState.scene == "start") {
-   renderer.setSize(window.innerWidth, window.innerHeight);
-   renderer.render( startScene, startCamera );
- }
 }
