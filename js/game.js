@@ -13,8 +13,8 @@ var enemy1, enemy2;
 
 // Measurements
 var unit = 10; // unit for the "grid", used in the calculation of the cube, ground
-var planeW = 30;
-var planeH = 20;
+var planeW = 50;//30
+var planeH = 30;//20
 var camHeight = 150; // unit for the distance that the camera is from the origin
 var north = unit * (-planeH / 2);
 var east = unit * (planeW / 2);
@@ -39,7 +39,7 @@ var dir = [[unit,0,0],[0,0,-1*unit],[-1*unit,0,0],[0,0,unit],[0,-1*unit,0],[0,un
 
 var startScene, startCamera, startText;
 
-
+var groundMirror;
 //End Scene
 var endScene2, endCamera2, endText2;
 
@@ -117,6 +117,7 @@ function initScene() {
     scene = new Physijs.Scene();
 
     renderer = new THREE.WebGLRenderer();
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
     renderer.shadowMap.enabled = true;
@@ -346,7 +347,22 @@ function buildMainScene() {
 
     // Corners of the ground plane
 
+    var WIDTH = window.innerWidth;
+		var HEIGHT = window.innerHeight;
+    //var geometry = new THREE.CircleBufferGeometry( 40, 64 );
+    var geometry = new THREE.PlaneGeometry(unit * planeW + unit, unit * planeH + unit);
+		groundMirror = new THREE.Reflector( geometry, {
+			clipBias: 0.003,
+			textureWidth: WIDTH * window.devicePixelRatio,
+			textureHeight: HEIGHT * window.devicePixelRatio,
+			color: 0x777777,
+			recursion: 1
+		} );
+		groundMirror.position.y = -5;
+		groundMirror.rotateX( - Math.PI / 2 );
+		scene.add( groundMirror );
 
+    // Corners of the ground plane
     cubeRed = addCube(west, 0, south, red);
     cubeGreen = addCube(west, 0, north, green);
     cubeBlue = addCube(east, 0, north, blue);
@@ -636,8 +652,12 @@ function animate() {
      }
    }
 
+   if (snake[0].position.y <= -5) {
+     gameState.health = gameState.health - 100;
+   }
+
    if (gameState.health <= 0) {
-    endText2.rotateY(0.005);
+    endText2.rotateX(0.005);
     renderer.render(endScene2, endCamera2 );
     var info = document.getElementById("info");
     info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: 0' +'</div>';
