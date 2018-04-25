@@ -656,4 +656,20 @@ function animate() {
    renderer.setSize(window.innerWidth, window.innerHeight);
    renderer.render( startScene, startCamera );
  }
+	
+if (gameState.score >= 30) {
+        	gameState.scene = 'youwon';
+      }
+	
+if (gameState.scene == 'youwon') {
+    endScene2 = initScene2();
+    endText2 = createSkyBox('youwon3.png',1);
+    endScene2.add(endText2);
+    var light2 = createPointLight();
+    light2.position.set(0,200,20);
+    endScene2.add(light2);
+    endCamera2 = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    endCamera2.position.set(0,50,1);
+    endCamera2.lookAt(0,0,0);
+  }
 }
