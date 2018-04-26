@@ -638,9 +638,30 @@ function animate() {
 	    //console.log(snake[1])
 	    for (var i = 1; i < snake.length; ++i) {
 		if (snake[i].position.x == snake[0].position.x && snake[i].position.y == snake[0].position.y && snake[i].position.z == snake[0].position.z) {
-		    hiss.play();
 		    gameState.health = gameState.health - 100;
 		    break;
+		}
+		
+		if (Math.abs(enemy1.position.x - snake[i].position.x) <= 10 && Math.abs(enemy1.position.z - snake[i].position.z) <= 10) {
+		    hiss.play();
+		    gameState.health = -1;
+		    if (gameState.health == 0) {
+			gameState.scene = 'youlose';
+		    }
+    		    // createEndScene2();
+		    break;
+		}
+
+		if (Math.abs(enemy2.position.x - snake[i].position.x) <= 10 && Math.abs(enemy2.position.z - snake[i].position.z) <= 10) {
+     		    // gameState.health--;
+    		    // gameState.scene = 'youlose';
+    		    // createEndScene2();
+		    hiss.play();
+      		    gameState.health = -1;
+      		    if (gameState.health < 0) {
+        		gameState.scene = 'youlose';
+      		    }
+    		    break;
 		}
 	    }
 
