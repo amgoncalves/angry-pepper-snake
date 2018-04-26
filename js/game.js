@@ -69,7 +69,7 @@ function init() {
 
 function createOpenScene(){
     startScene = new THREE.Scene();
-    startText = createBackground('init.png',1);
+    startText = createBackground('init.jpg',1);
 
     startScene.add(startText);
     var startlight = createPointLight();
