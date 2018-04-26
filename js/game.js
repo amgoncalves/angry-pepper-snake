@@ -94,7 +94,7 @@ function createPointLight(){
 
 function createBackground(image,k){
     var planeGeometry = new THREE.PlaneGeometry( 210, 100, 128 );
-    var texture = new THREE.TextureLoader().load( '../images/'+image );
+    var texture = new THREE.TextureLoader().load( './images/'+image );
     var planeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff,  map: texture ,side:THREE.DoubleSide} );
     planeMesh = new THREE.Mesh( planeGeometry, planeMaterial );
     startScene.add(planeMesh);
