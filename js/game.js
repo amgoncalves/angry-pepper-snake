@@ -126,7 +126,7 @@ function initScene() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     moveCamera(0, camHeight, 0);
-    initSounds();    
+    initSounds();
 }
 
 //Create End scene
@@ -178,11 +178,11 @@ function initSounds() {
 	crunch.setBuffer( buffer );
 	crunch.setVolume( 0.5 );
     });
-    
+
     var audioListener2 = new THREE.AudioListener();
     camera.add(audioListener2);
     hiss = new THREE.Audio(audioListener2);
-    var audioLoader2 = new THREE.AudioLoader();    
+    var audioLoader2 = new THREE.AudioLoader();
     audioLoader2.load( './sounds/343927__reitanna__hiss2.wav', function( buffer ) {
 	hiss.setBuffer( buffer );
 	hiss.setVolume( 0.5 );
@@ -191,13 +191,13 @@ function initSounds() {
     var audioListener3 = new THREE.AudioListener();
     camera.add(audioListener3);
     music = new THREE.Audio(audioListener3);
-    var audioLoader3 = new THREE.AudioLoader();    
+    var audioLoader3 = new THREE.AudioLoader();
     audioLoader3.load( './sounds/381384__uso-sketch__jungle.wav', function( buffer ) {
 	music.setBuffer( buffer );
 	music.setLoop( true );
 	music.setVolume( 0.5 );
-	music.play();	
-    });    
+	music.play();
+    });
 }
 
 function createPointLight(){
@@ -464,7 +464,7 @@ function keydown(event) {
 	break;
     case "Escape":
 	gameState.pause = !gameState.pause;
-	break;	
+	break;
     }
 }
 
@@ -611,37 +611,36 @@ function animate() {
 	    setCamera();
 	    renderer.render(scene, camera);
 	    var info = document.getElementById("info");
-	    info.innerHTML='<div style="font-size:24pt">*paused* Camera: ' + gameState.camera  + '.  Press 1, 2, or 3 to change camera.  Press esc to resume.</div>';	    	    
+	    info.innerHTML='<div style="font-size:24pt">*paused* Camera: ' + gameState.camera  + '.  Press 1, 2, or 3 to change camera.  Press esc to resume.</div>';
 	} else {
 	    setCamera();
 	    counter++;
 	    if (counter == 30) {
-		moveSnake();
-		moved = true;
-		counter = 0;
-		moveEnemy()
+    		moveSnake();
+    		moved = true;
+    		counter = 0;
+    		moveEnemy()
 	    }
 
 	    if (Math.abs(food.position.x - snake[0].position.x) <= 5 && Math.abs(food.position.z - snake[0].position.z) <= 5 && Math.abs(food.position.y - snake[0].position.y) <= 5) {
-		gameState.score++;
-		console.log("adding new cube");
-		crunch.play();
-		var snakeCube = addSnakeCube(newCubePos.x,newCubePos.y,newCubePos.z, white);
-		setSelfCol(snakeCube);
-		snake.push(snakeCube);
-		gameState.length++;
-		food.position.y = food.position.y - 1000;
-		food.__dirtyPosition = true;
-		food = addMedBalls(1);
+    		gameState.score++;
+    		console.log("adding new cube");
+    		crunch.play();
+    		var snakeCube = addSnakeCube(newCubePos.x,newCubePos.y,newCubePos.z, white);
+    		setSelfCol(snakeCube);
+    		snake.push(snakeCube);
+    		gameState.length++;
+    		food.position.y = food.position.y - 1000;
+    		food.__dirtyPosition = true;
+    		food = addMedBalls(1);
 	    }
 
-	    //console.log(snake[1])
 	    for (var i = 1; i < snake.length; ++i) {
 		if (snake[i].position.x == snake[0].position.x && snake[i].position.y == snake[0].position.y && snake[i].position.z == snake[0].position.z) {
 		    gameState.health = gameState.health - 100;
 		    break;
 		}
-		
+
 		if (Math.abs(enemy1.position.x - snake[i].position.x) <= 10 && Math.abs(enemy1.position.z - snake[i].position.z) <= 10) {
 		    hiss.play();
 		    gameState.health = -1;
@@ -653,17 +652,13 @@ function animate() {
 		}
 
 		if (Math.abs(enemy2.position.x - snake[i].position.x) <= 10 && Math.abs(enemy2.position.z - snake[i].position.z) <= 10) {
-     		    // gameState.health--;
-    		    // gameState.scene = 'youlose';
-    		    // createEndScene2();
+
 		    hiss.play();
-      		    gameState.health = -1;
-      		    if (gameState.health < 0) {
-        		gameState.scene = 'youlose';
-      		    }
-    		    break;
-		}
-	    }
+      	gameState.health = -1;
+        gameState.scene = 'youlose';
+    		break;
+		   }
+	}
 
 	    if (snake[0].position.y <= -5) {
 		gameState.health = gameState.health - 100;
