@@ -534,8 +534,9 @@ function EnmOutOfBound(enm1,enm2) {
 }
 
 function createSphere(){
-    var geometry = new THREE.SphereGeometry( 5, 10, 10);
-    var material = new THREE.MeshLambertMaterial( { color: 0xffff00} );
+    var geometry = new THREE.SphereGeometry( 10, 10, 10);
+    var texture = new THREE.TextureLoader().load( "./images/enmMat.jpg");
+    var material = new THREE.MeshPhongMaterial({ map: texture });
     var pmaterial = new Physijs.createMaterial(material,0.9,0.5);
     var mesh = new Physijs.SphereMesh( geometry, material );
     mesh.setDamping(0.1,0.1);
@@ -644,7 +645,7 @@ function animate() {
 		if (Math.abs(enemy1.position.x - snake[i].position.x) <= 10 && Math.abs(enemy1.position.z - snake[i].position.z) <= 10) {
 		    hiss.play();
 		    gameState.health = -1;
-		    if (gameState.health == 0) {
+		    if (gameState.health < 0) {
 			gameState.scene = 'youlose';
 		    }
     		    // createEndScene2();
@@ -654,8 +655,10 @@ function animate() {
 		if (Math.abs(enemy2.position.x - snake[i].position.x) <= 10 && Math.abs(enemy2.position.z - snake[i].position.z) <= 10) {
 
 		    hiss.play();
-      	gameState.health = -1;
-        gameState.scene = 'youlose';
+      		gameState.health = -1;
+        	if (gameState.health < 0) {
+			gameState.scene = 'youlose';
+		    }
     		break;
 		   }
 	}
