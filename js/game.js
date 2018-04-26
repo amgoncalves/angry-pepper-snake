@@ -677,6 +677,22 @@ function animate() {
 		var info = document.getElementById("info");
 		info.innerHTML='<div style="font-size:24pt">Score: ' + gameState.score + '  Health: ' + gameState.health +'</div>';
 	    }
+		
+		if (gameState.score >= 15) {
+       			gameState.scene = 'youwon';
+      		}
+
+      		if (gameState.scene == 'youwon') {
+         		 endScene2 = initScene2();
+          		 endText2 = createSkyBox('youwon.png',10);
+          		 endScene2.add(endText2);
+                         var light2 = createPointLight();
+                         light2.position.set(0,200,20);
+                         endScene2.add(light2);
+          		 endCamera2 = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
+          		 endCamera2.position.set(0,50,1);
+          		 endCamera2.lookAt(0,0,0);
+        }
 	}
 
     } else if (gameState.scene == "start") {
